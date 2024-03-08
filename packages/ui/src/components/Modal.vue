@@ -1,74 +1,132 @@
 <template>
-    <div class="modal" tabindex="0" @mousedown="closeModalOnBackgroundClick">
-        <div class="modal__container" :style="{ width: width }">
-            <div class="modal__content" :style="{ height: fullHeight ? '90vh': undefined }">
-                <header>
-                    <div style="display: flex; justify-content: space-between;">
-                        <h3>{{ title }}</h3>
-                        <div style="margin-right: 1rem;">
-                            <slot name="after-title"></slot>
-                        </div>
-                    </div>
-                    <span @click="$emit('update:modelValue', false)"><i class="fa fa-times"></i></span>
-                </header>
-                <div class="modal-main" :style="{ flexBasis: height }">
-                    <slot>No Modal Content</slot>
-                </div>
-                <footer v-if="$slots.footer">
-                    <slot name="footer"></slot>
-                </footer>
+  <div ref="modal" class="modal" tabindex="0" @mousedown="closeModalOnBackgroundClick">
+    <div class="modal__container" :style="{ width: width }">
+      <div class="modal__content" :style="{ height: fullHeight ? '90vh': undefined }">
+        <header>
+          <div style="display: flex; justify-content: space-between;">
+            <h3>{{ title }}</h3>
+            <div style="margin-right: 1rem;">
+              <slot name="after-title"></slot>
             </div>
+          </div>
+          <span @click="$emit('update:modelValue', false)"><i class="fa fa-times"></i></span>
+        </header>
+        <div class="modal-main" :style="{ flexBasis: height }">
+          <slot>No Modal Content</slot>
         </div>
+        <footer v-if="$slots.footer">
+          <slot name="footer"></slot>
+        </footer>
+      </div>
     </div>
+  </div>
 </template>
 
-<script>
-export default {
-    props: {
-        modelValue: Boolean,
-        title: String,
-        height: {
-            type: String,
-            required: false
-        },
-        width: {
-            type: String,
-            required: false
-        },
-        fullHeight: {
-            type: Boolean,
-            default: false
-        }
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
+defineProps({
+  modelValue: Boolean,
+    title: String,
+    height: {
+        type: String,
+        required: false
     },
-    methods: {
-        closeModalOnBackgroundClick(e) {
-            // document.body.contains(e.target) is needed when the clicked element is no longer in the DOM
-            // if you don't add it, the orphaned e.target element will close the modal, as its "closest" will
-            // not yield the .modal__content class element or any other elements for that matter
-            // because it has been removed by the user
-            if(e.target.closest('.modal__content') === null && document.body.contains(e.target)) {
-                this.$emit('update:modelValue', false)
-            }
-        },
-        handleKeydown(event) {
-            if(event.key === 'Escape') {
-                const rect = this.$el.getBoundingClientRect()
-                const x = rect.left
-                const y = rect.top
-                const topElement = document.elementFromPoint(x, y)
-                if(this.$el === topElement) {
-                    this.$emit('update:modelValue', false)
-                }
-            }
-        }
+    width: {
+        type: String,
+        required: false
     },
-    mounted() {
-        window.addEventListener('keydown', this.handleKeydown)
-    },
-    beforeUnmount() {
-        window.removeEventListener('keydown', this.handleKeydown)
+    fullHeight: {
+        type: Boolean,
+        default: false
     }
+})
+
+const modal = ref(null)
+
+const emit = defineEmits(['update:modelValue'])
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
+function closeModalOnBackgroundClick(e) {
+  // document.body.contains(e.target) is needed when the clicked element is no longer in the DOM
+  // if you don't add it, the orphaned e.target element will close the modal, as its "closest" will
+  // not yield the .modal__content class element or any other elements for that matter
+  // because it has been removed by the user
+  if(e.target.closest('.modal__content') === null && document.body.contains(e.target)) {
+      // this.$emit('update:modelValue', false)
+      emit('update:modelValue', false)
+  }
 }
+
+function handleKeydown(event) {
+  if(event.key === 'Escape') {
+    // const rect = this.$el.getBoundingClientRect()
+    const rect = modal.getBoundingClientRect()
+    const x = rect.left
+    const y = rect.top
+    const topElement = document.elementFromPoint(x, y)
+    // if(this.$el === topElement) {
+    if(modal === topElement) {
+        // this.$emit('update:modelValue', false)
+        emit('update:modelValue', false)
+    }
+  }
+}
+
+
+// export default {
+//     props: {
+//         modelValue: Boolean,
+//         title: String,
+//         height: {
+//             type: String,
+//             required: false
+//         },
+//         width: {
+//             type: String,
+//             required: false
+//         },
+//         fullHeight: {
+//             type: Boolean,
+//             default: false
+//         }
+//     },
+    // methods: {
+        // closeModalOnBackgroundClick(e) {
+        //     // document.body.contains(e.target) is needed when the clicked element is no longer in the DOM
+        //     // if you don't add it, the orphaned e.target element will close the modal, as its "closest" will
+        //     // not yield the .modal__content class element or any other elements for that matter
+        //     // because it has been removed by the user
+        //     if(e.target.closest('.modal__content') === null && document.body.contains(e.target)) {
+        //         this.$emit('update:modelValue', false)
+        //     }
+        // },
+        // handleKeydown(event) {
+        //     if(event.key === 'Escape') {
+        //         const rect = this.$el.getBoundingClientRect()
+        //         const x = rect.left
+        //         const y = rect.top
+        //         const topElement = document.elementFromPoint(x, y)
+        //         if(this.$el === topElement) {
+        //             this.$emit('update:modelValue', false)
+        //         }
+        //     }
+        // }
+    // },
+    // mounted() {
+    //     window.addEventListener('keydown', this.handleKeydown)
+    // },
+    // beforeUnmount() {
+    //     window.removeEventListener('keydown', this.handleKeydown)
+    // }
+// }
 </script>
 
 <style scoped>
