@@ -5,9 +5,17 @@ import copy from 'rollup-plugin-copy'
 import { VitePWA } from 'vite-plugin-pwa'
 import { ViteRevisionPlugin } from './vite-plugin-revision'
 
+import tailwind from "tailwindcss"
+import autoprefixer from "autoprefixer"
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
     const config = {
+        css: {
+            postcss: {
+                plugins: [tailwind(), autoprefixer()],
+            },
+        },
         plugins: [
             process.env.VITEST ? null : ViteRevisionPlugin(),
             vue({
