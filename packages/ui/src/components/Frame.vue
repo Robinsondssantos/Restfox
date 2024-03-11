@@ -1,3 +1,49 @@
+<template>
+  <div class="container">
+    <header>
+      <NavBar nav="collection" />
+    </header>
+
+    <section class="tab-bar" v-if="activeTab">
+      <TabBar />
+    </section>
+
+    <aside class="sidebar">
+      <Sidebar />
+    </aside>
+
+    <section class="request-response-panels" :class="{ 'top-bottom': requestResponseLayoutTopBottom, 'left-right': !requestResponseLayoutTopBottom }" v-resizable.top-bottom="requestResponseLayoutTopBottom" v-show="activeTab && activeTab._type === 'request'" :key="'request-panel-layout-' + requestResponseLayoutTopBottom" @resized="requestPanelResized">
+      <section
+        class="request-panel" :data-min-width-px="!requestResponseLayoutTopBottom ? 250 : 100" :style="{
+          'flexGrow': requestPanelRatio,
+          'minWidth': !requestResponseLayoutTopBottom ? '250px' : null,
+          'minHeight': requestResponseLayoutTopBottom ? '100px' : null
+        }"
+      >
+        <RequestPanel />
+      </section>
+
+      <section class="resizer" data-resizer></section>
+
+      <section
+        class="response-panel" :data-min-width-px="!requestResponseLayoutTopBottom ? 250 : 100" :style="{
+          'flexGrow': responsePanelRatio,
+          'minWidth': !requestResponseLayoutTopBottom ? '250px' : null,
+          'minHeight': requestResponseLayoutTopBottom ? '100px' : null
+        }"
+      >
+      <ResponsePanel />
+      </section>
+    </section>
+
+    <section class="request-response-panels" v-if="activeTab && activeTab._type === 'socket'">
+      <SocketPanel :key="activeTab._id" />
+    </section>
+
+    <ImportModal />
+  </div>
+</template>
+
 <script setup>
 import NavBar from '@/components/NavBar.vue'
 import TabBar from '@/components/TabBar.vue'
@@ -76,52 +122,6 @@ onBeforeUnmount(() => {
     resizeObserverSidebar.disconnect()
 })
 </script>
-
-<template>
-    <div class="container">
-        <header>
-            <NavBar nav="collection" />
-        </header>
-
-        <section class="tab-bar" v-if="activeTab">
-            <TabBar />
-        </section>
-
-        <aside class="sidebar">
-            <Sidebar />
-        </aside>
-
-        <section class="request-response-panels" :class="{ 'top-bottom': requestResponseLayoutTopBottom, 'left-right': !requestResponseLayoutTopBottom }" v-resizable.top-bottom="requestResponseLayoutTopBottom" v-show="activeTab && activeTab._type === 'request'" :key="'request-panel-layout-' + requestResponseLayoutTopBottom" @resized="requestPanelResized">
-            <section
-                class="request-panel" :data-min-width-px="!requestResponseLayoutTopBottom ? 250 : 100" :style="{
-                    'flexGrow': requestPanelRatio,
-                    'minWidth': !requestResponseLayoutTopBottom ? '250px' : null,
-                    'minHeight': requestResponseLayoutTopBottom ? '100px' : null
-                }"
-            >
-                <RequestPanel />
-            </section>
-
-            <section class="resizer" data-resizer></section>
-
-            <section
-                class="response-panel" :data-min-width-px="!requestResponseLayoutTopBottom ? 250 : 100" :style="{
-                    'flexGrow': responsePanelRatio,
-                    'minWidth': !requestResponseLayoutTopBottom ? '250px' : null,
-                    'minHeight': requestResponseLayoutTopBottom ? '100px' : null
-                }"
-            >
-                <ResponsePanel />
-            </section>
-        </section>
-
-        <section class="request-response-panels" v-if="activeTab && activeTab._type === 'socket'">
-            <SocketPanel :key="activeTab._id" />
-        </section>
-
-        <ImportModal />
-    </div>
-</template>
 
 <style scoped>
 .container {
