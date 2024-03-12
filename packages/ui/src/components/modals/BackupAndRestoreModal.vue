@@ -27,48 +27,43 @@
     </modal>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import Modal from '@/components/Modal.vue'
 import { importDB, exportDB } from '@/db'
 import { downloadBlob, todayISODate } from '@/helpers'
 
-export default {
-    components: {
-        Modal
-    },
-    data() {
-        return {
-            fileToRestore: null,
-        }
-    },
-    computed: {
-        showBackupAndRestoreModal: {
-            get() {
-                return this.$store.state.showBackupAndRestoreModal
-            },
-            set(value) {
-                this.$store.commit('showBackupAndRestoreModal', value)
-            }
-        }
-    },
-    methods: {
-        async exportBackup() {
-            const blob = await exportDB()
-            downloadBlob(`Restfox_Backup_${todayISODate()}.json`, blob)
-        },
-        async restoreBackup() {
-            if(!confirm('Are you sure?')) {
-                return
-            }
+const fileToRestore = ref(null)
 
-            try {
-                await importDB(this.fileToRestore)
-                alert('Backup restored successfully')
-            } catch(e) {
-                console.log(e)
-                alert('Invalid backup file given')
-            }
-        }
+const store = useStore()
+
+const showBackupAndRestoreModal = computed({
+    get() {
+        return store.state.showBackupAndRestoreModal
+    },
+    set(value) {
+        store.commit('showBackupAndRestoreModal', value)
+    }
+})
+
+async function exportBackup() {
+    const blob = await exportDB()
+    downloadBlob(`Restfox_Backup_${todayISODate()}.json`, blob)
+}
+
+async function restoreBackup() {
+    if (!confirm('Are you sure?')) {
+        return
+    }
+
+    try {
+        await importDB(fileToRestore.value)
+        alert('Backup restored successfully')
+    } catch(e) {
+        console.log(e)
+        alert('Invalid backup file given')
     }
 }
+
 </script>
