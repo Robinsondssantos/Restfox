@@ -13,55 +13,50 @@
     </form>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useStore } from 'vuex'
 import Modal from '@/components/Modal.vue'
 
-export default {
-    directives: {
-        focus: {
-            mounted(element) {
-                element.focus()
-                element.select()
-            }
-        }
-    },
-    props: {
-        showModal: Boolean,
-        workspaceToDuplicate: Object
-    },
-    components: {
-        Modal
-    },
-    data() {
-        return {
-            newName: ''
-        }
-    },
-    computed: {
-        showModalComp: {
-            get() {
-                return this.showModal
-            },
-            set(value) {
-                this.$emit('update:showModal', value)
-            }
-        }
-    },
-    watch: {
-        workspaceToDuplicate() {
-            if(this.workspaceToDuplicate) {
-                this.newName = this.workspaceToDuplicate.name
-            }
-        }
-    },
-    methods: {
-        async duplicateWorkspace() {
-            this.$store.dispatch('duplicateWorkspace', {
-                sourceWorkspaceId: this.workspaceToDuplicate._id,
-                name: this.newName
-            })
-            this.showModalComp = false
-        }
+const vFocus = {
+    mounted: (el) => {
+        el.focus()
+        el.select()
     }
 }
+
+const props = defineProps({
+    showModal: Boolean,
+    workspaceToDuplicate: Object
+})
+
+const emit = defineEmits(['update:showModal'])
+
+const newName = ref('')
+
+const store = useStore()
+
+const showModalComp = computed({
+    get() {
+        return props.showModal
+    },
+    set(value) {
+        emit('update:showModal', value)
+    }
+})
+
+watch(props.workspaceToDuplicate, (v) => {
+    if (v) {
+        newName.value = props.workspaceToDuplicate.name
+    }
+})
+
+async function duplicateWorkspace() {
+    store.dispatch('duplicateWorkspace', {
+        sourceWorkspaceId: props.workspaceToDuplicate._id,
+        name: newName.value
+    })
+    showModalComp.value = false
+}
+
 </script>
