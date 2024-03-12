@@ -13,59 +13,54 @@
     </form>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useStore } from 'vuex'
 import Modal from '@/components/Modal.vue'
 
-export default {
-    directives: {
-        focus: {
-            mounted(element) {
-                element.focus()
-                element.select()
-            }
-        }
-    },
-    props: {
-        showModal: Boolean,
-        parentId: {
-            type: String,
-            default: null
-        }
-    },
-    components: {
-        Modal
-    },
-    data() {
-        return {
-            folderName: 'New Folder'
-        }
-    },
-    computed: {
-        showModalComp: {
-            get() {
-                return this.showModal
-            },
-            set(value) {
-                this.$emit('update:showModal', value)
-            }
-        }
-    },
-    watch: {
-        showModal() {
-            if(this.showModal) {
-                this.folderName = 'New Folder'
-            }
-        }
-    },
-    methods: {
-        async createFolder() {
-            this.$store.dispatch('createCollectionItem', {
-                type: 'request_group',
-                name: this.folderName,
-                parentId: this.parentId
-            })
-            this.showModalComp = false
-        }
+const vFocus = {
+    mounted: (el) => {
+        el.focus()
+        el.select()
     }
 }
+
+const props = defineProps({
+    showModal: Boolean,
+    parentId: {
+        type: String,
+        default: null
+    }
+})
+
+const emit = defineEmits(['update:showModal'])
+
+const folderName = ref('New Folder')
+
+const store = useStore()
+
+const showModalComp = computed({
+    get() {
+        return props.showModal
+    },
+    set(value) {
+        emit('update:showModal', value)
+    }
+})
+
+watch(props.showModal, (v) => {
+    if (v) {
+        folderName.value = 'New Folder'
+    }
+})
+
+async function createFolder() {
+    store.dispatch('createCollectionItem', {
+        type: 'request_group',
+        name: folderName.value,
+        parentId: props.parentId
+    })
+    showModalComp.value = false
+}
+
 </script>
