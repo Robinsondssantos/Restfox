@@ -13,62 +13,57 @@
     </form>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useStore } from 'vuex'
 import Modal from '@/components/Modal.vue'
 
-export default {
-    directives: {
-        focus: {
-            mounted(element) {
-                element.focus()
-                element.select()
-            }
-        }
-    },
-    props: {
-        showModal: Boolean,
-        parentId: {
-            type: String,
-            default: null
-        }
-    },
-    components: {
-        Modal
-    },
-    data() {
-        return {
-            requestName: 'New Request',
-            requestMethod: 'GET'
-        }
-    },
-    computed: {
-        showModalComp: {
-            get() {
-                return this.showModal
-            },
-            set(value) {
-                this.$emit('update:showModal', value)
-            }
-        }
-    },
-    watch: {
-        showModal() {
-            if(this.showModal) {
-                this.requestName = 'New Request'
-            }
-        }
-    },
-    methods: {
-        async createRequest() {
-            this.$store.dispatch('createCollectionItem', {
-                type: 'request',
-                name: this.requestName,
-                method: this.requestMethod,
-                mimeType: 'No Body',
-                parentId: this.parentId
-            })
-            this.showModalComp = false
-        }
+const vFocus = {
+    mounted: (el) => {
+        el.focus()
+        el.select()
     }
 }
+
+const props = defineProps({
+    showModal: Boolean,
+    parentId: {
+        type: String,
+        default: null
+    }
+})
+
+const emit = defineEmits(['update:showModal'])
+
+const requestName = ref('New Request')
+const requestMethod = ref('GET')
+
+const store = useStore()
+
+const showModalComp = computed({
+    get() {
+        return props.showModal
+    },
+    set(value) {
+        emit('update:showModal', value)
+    }
+})
+
+watch(props.showModal, (v) => {
+    if (v) {
+        requestName.value = 'New Request'
+    }
+})
+
+async function createRequest() {
+    store.dispatch('createCollectionItem', {
+        type: 'request',
+        name: requestName.value,
+        method: requestMethod.value,
+        mimeType: 'No Body',
+        parentId: props.parentId
+    })
+    showModalComp.value = false
+}
+
 </script>
